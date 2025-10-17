@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Application</title>
+  
+  <!-- Bootstrap CSS CDN for styling -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet" 
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoA1wsk67kuBFbU8rNq3hy9PEeIebhndz0G4MUxFom8kJ0J" 
+    crossorigin="anonymous" 
+  />
+
+  <!-- highlight.js CSS for code highlighting -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/default.min.css" 
+  />
+
+  <style>
+    /* Custom styles for the application */
+    body {
+      padding: 2rem;
+      background-color: #f8f9fa;
+    }
+
+    #app {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    #markdown-input {
+      height: 200px;
+    }
+
+    pre {
+      padding: 1rem;
+      background-color: #e9ecef;
+      border-radius: 0.25rem;
+      overflow-x: auto;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      #markdown-input {
+        height: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="container border p-4 bg-white rounded shadow">
+    <!-- Title -->
+    <h1 id="title" class="mb-4">Test Application</h1>
+    
+    <!-- Input Area -->
+    <div class="mb-3">
+      <label for="markdown-input" class="form-label">Enter Markdown:</label>
+      <textarea id="markdown-input" class="form-control" placeholder="Type your markdown here..."></textarea>
+    </div>
+
+    <!-- Rendered Output -->
+    <h2 class="mt-4 mb-3">Preview:</h2>
+    <div id="rendered-content" class="border p-3 rounded"></div>
+  </div>
+
+  <!-- Bootstrap JS Bundle (including Popper) -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-q/QDyW8ZOhl2WENPn8/jlYFhM5I40FunpXtW1OyAczLoy3fKp21P4GXDQfftF7m4" 
+    crossorigin="anonymous"></script>
+
+  <!-- Marked.js for Markdown parsing -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- highlight.js for syntax highlighting -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/lib/highlight.min.js"></script>
+  <script>
+    // Initialize highlight.js
+    hljs.autoHighlight = false; // Disable auto-highlighting to control manually
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const markdownInput = document.getElementById('markdown-input');
+      const renderedContent = document.getElementById('rendered-content');
+
+      /**
+       * Function to update the rendered markdown content
+       * with syntax highlighting and error handling
+       */
+      const updateRender = () => {
+        try {
+          const markdownText = markdownInput.value;
+
+          // Parse Markdown to HTML using marked
+          const html = marked.parse(markdownText, {
+            gfm: true,
+            headerIds: true,
+            // Sanitize option deprecated, use 'sanitize' in older versions
+            // but now use 'domPurify' or similar for security in production
+            // Here, for simplicity, we do not sanitize.
+          });
+
+          // Set the inner HTML
+          renderedContent.innerHTML = html;
+
+          // Find all code blocks for syntax highlighting
+          renderedContent.querySelectorAll('pre code').forEach((block) => {
+            highlightBlock(block);
+          });
+        } catch (error) {
+          // Graceful error handling
+          console.error('Error rendering markdown:', error);
+          renderedContent.innerHTML = '<div class="alert alert-danger" role="alert">Error rendering markdown.</div>';
+        }
+      };
+
+      /**
+       * Function to highlight code blocks using highlight.js
+       * @param {HTMLElement} codeBlock 
+       */
+      const highlightBlock = (codeBlock) => {
+        if (codeBlock) {
+          try {
+            hljs.highlightElement(codeBlock);
+          } catch (err) {
+            console.warn('Highlighting failed:', err);
+          }
+        }
+      };
+
+      // Event listener for real-time rendering
+      markdownInput.addEventListener('input', updateRender);
+
+      // Initialize with some sample markdown (optional)
+      const sampleMarkdown = `# Sample Markdown
+
+This is a **Test Application**.
+
+\`\`\`javascript
+// Sample code block
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+console.log(greet('World'));
+\`\`\`
+`;
+      markdownInput.value = sampleMarkdown;
+      // Render initial content
+      updateRender();
+    });
+  </script>
+</body>
+</html>
